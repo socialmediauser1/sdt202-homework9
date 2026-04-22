@@ -17,6 +17,7 @@ class ClothingCategory(str, Enum):
     SHOES = "shoes"
     ACCESSORY = "accessory"
     OUTERWEAR = "outerwear"
+    HATS = "hats"
 
 class User(Base):
     __tablename__ = "users"

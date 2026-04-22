@@ -1,51 +1,106 @@
-# Costume Constructor (Alpha)
+# Costume Constructor - Alpha Version
 
-FastAPI web application that lets stylists and students catalog garments while laying the groundwork for the future outfit builder. The alpha milestone covers a PostgreSQL-backed wardrobe catalog with list/detail views and HTML forms with validation.
+A FastAPI application for managing clothing items and building outfits.
 
-## Requirements
+## Features (Alpha Version)
 
-- Python 3.11+
-- PostgreSQL 14+ (or compatible managed instance)
+- ✅ CRUD operations for clothing items
+- ✅ PostgreSQL database support (SQLite for development)
+- ✅ Jinja2 templates with list, detail, and form views
+- ✅ Server-side validation and error handling
+- ✅ User-friendly navigation and styling
 
-## Getting Started
+## Setup Instructions
 
-1. **Clone & create a virtual environment**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+### 1. Install Dependencies
 
-2. **Configure the database connection**
+```bash
+pip install -r requirements.txt
+```
 
-   Set `DATABASE_URL` or create a `.env` file in the project root:
-   ```
-   DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/costume_constructor
-   ```
+### 2. Database Configuration
 
-   Create the database if it does not exist:
-   ```bash
-   createdb costume_constructor
-   ```
+Create a `.env` file in the project root:
 
-3. **Run the server**
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+```env
+# For PostgreSQL (recommended):
+# Both formats work with psycopg3:
+DATABASE_URL=postgresql://username:password@localhost:5432/costume_constructor
+# or explicitly:
+DATABASE_URL=postgresql+psycopg://username:password@localhost:5432/costume_constructor
 
-   Visit `http://127.0.0.1:8000` for the landing page, `http://127.0.0.1:8000/clothes` for the catalog.
+# For SQLite (default, for development):
+DATABASE_URL=sqlite:///./test.db
+```
 
-## Features in this Milestone
+If no `.env` file is provided, the application defaults to SQLite (`sqlite:///./test.db`).
 
-- SQLAlchemy models that map the milestone entities (Users, Clothes, Outfits, Outfit Items).
-- CRUD flow for clothing pieces with server-side validation powered by Pydantic and clean flash-style error messaging.
-- List/detail/form templates rendered with Jinja2 and styled with a lightweight CSS theme for readability.
-- Navigation between the landing page, catalog, and creation workflows.
-- Automatic table creation on startup to make the demo easy to run locally.
+### 3. Run the Application
 
-## Next Steps
+```bash
+uvicorn app.main:app --reload
+```
 
-- Build session-backed user accounts with login/register forms.
-- Expand the Outfit builder canvas so saved clothes can be dragged onto looks.
-- Add an admin dashboard for moderating users and bulk editing catalog entries.
+The application will be available at `http://localhost:8000`
+
+### 4. Database Tables
+
+Tables are automatically created on startup. The main entities are:
+- `clothes` - Clothing items catalog
+- `users` - User accounts (for future use)
+- `outfits` - Outfit collections (for future use)
+- `outfit_items` - Outfit-clothing relationships (for future use)
+
+## Project Structure
+
+```
+.
+├── app/
+│   ├── __init__.py
+│   ├── main.py           # FastAPI application
+│   ├── database.py       # Database configuration
+│   ├── models.py         # SQLAlchemy models
+│   ├── schemas.py        # Pydantic schemas
+│   ├── crud.py           # Database operations
+│   └── routers/
+│       ├── __init__.py
+│       └── clothes.py    # Clothing routes
+├── templates/            # Jinja2 templates
+│   ├── base.html
+│   ├── home.html
+│   └── clothes/
+│       ├── list.html
+│       ├── detail.html
+│       └── form.html
+├── static/
+│   └── styles.css        # CSS styles
+└── requirements.txt      # Python dependencies
+```
+
+## Usage
+
+1. **Home Page** (`/`) - Overview and navigation
+2. **Clothing Catalog** (`/clothes`) - List all clothing items
+3. **Add Garment** (`/clothes/new`) - Create a new clothing item
+4. **View Details** (`/clothes/{id}`) - View clothing item details
+5. **Edit Garment** (`/clothes/{id}/edit`) - Edit a clothing item
+6. **Delete Garment** (`/clothes/{id}/delete`) - Delete a clothing item (POST)
+
+## Validation
+
+The application includes server-side validation:
+- Name: 2-120 characters, required
+- Category: Required, must be one of: top, bottom, shoes, accessory, outerwear
+- Color: Optional, max 50 characters
+- Size: Optional, max 40 characters
+- Description: Optional, max 600 characters
+- Image URL: Optional, must be a valid HTTP/HTTPS URL if provided
+
+## Notes
+
+This is an alpha version. Future features will include:
+- User authentication
+- Outfit creation and management
+- Image upload functionality
+- Advanced search and filtering
 

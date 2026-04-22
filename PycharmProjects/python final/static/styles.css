@@ -102,10 +102,11 @@ input, select, textarea {
     font-size: 0.85rem;
 }
 
-.detail-actions {
+.detail-actions, .form-actions {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    margin-top: 1rem;
 }
 
 .detail-actions form {

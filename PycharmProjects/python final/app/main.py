@@ -13,7 +13,11 @@ templates = Jinja2Templates(directory="templates")
 
 @app.on_event("startup")
 def on_startup() -> None:
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Warning: Could not create database tables: {e}")
+        print("Application will continue, but database operations may fail.")
 
 app.include_router(clothes.router)
 app.mount("/static", StaticFiles(directory="static"), name="static")

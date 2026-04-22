@@ -39,7 +39,10 @@
             <input type="url" name="image_url" value="{{ form_values.get('image_url', '') }}">
             {% if errors.get('image_url') %}<small class="error">{{ errors.get('image_url') }}</small>{% endif %}
         </label>
-        <button class="button primary" type="submit">Save</button>
+        <div class="form-actions">
+            <button class="button primary" type="submit">Save</button>
+            <a class="button" href="/clothes">Cancel</a>
+        </div>
     </form>
 </section>
 {% endblock %}

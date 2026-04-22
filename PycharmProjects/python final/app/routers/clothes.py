@@ -15,14 +15,20 @@ templates = Jinja2Templates(directory="templates")
 router = APIRouter(tags=["clothes"])
 
 
-def _prepare_form_data(form_data) -> Dict[str, str]:
-    cleaned: Dict[str, str] = {}
+def _prepare_form_data(form_data) -> Dict[str, str | None]:
+    """Clean form data: strip whitespace and convert empty strings to None."""
+    cleaned: Dict[str, str | None] = {}
     for key, value in form_data.multi_items():
         if isinstance(value, str):
             cleaned[key] = value.strip() or None
         else:
             cleaned[key] = value
     return cleaned
+
+
+def _prepare_form_values_for_display(form_values: Dict[str, str | None]) -> Dict[str, str]:
+    """Convert form values for template display (None -> empty string)."""
+    return {k: (v if v is not None else "") for k, v in form_values.items()}
 
 
 def _category_options() -> list[tuple[str, str]]:
@@ -44,7 +50,7 @@ def new_clothing_form(request: Request):
         "clothes/form.html",
         {
             "request": request,
-            "page_title": "Add Garment",
+            "page_title": "Add Item",
             "action": "/clothes/new",
             "category_options": _category_options(),
             "form_values": {},
@@ -60,15 +66,26 @@ async def create_clothing(request: Request, session: Session = Depends(get_sessi
     try:
         payload = ClothingCreate(**cleaned)
     except ValidationError as exc:
-        errors = {error["loc"][0]: error["msg"] for error in exc.errors()}
+        errors = {}
+        for error in exc.errors():
+            field = error["loc"][0] if error["loc"] else "unknown"
+            msg = error["msg"]
+            if "ensure this value has at least" in msg.lower():
+                errors[field] = f"This field is required and must be at least {error.get('ctx', {}).get('limit_value', '')} characters"
+            elif "ensure this value has at most" in msg.lower():
+                errors[field] = f"This field must be at most {error.get('ctx', {}).get('limit_value', '')} characters"
+            elif "value is not a valid" in msg.lower():
+                errors[field] = "Please select a valid option"
+            else:
+                errors[field] = msg
         return templates.TemplateResponse(
             "clothes/form.html",
             {
                 "request": request,
-                "page_title": "Add Garment",
+                "page_title": "Add Item",
                 "action": "/clothes/new",
                 "category_options": _category_options(),
-                "form_values": cleaned,
+                "form_values": _prepare_form_values_for_display(cleaned),
                 "errors": errors,
             },
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -134,7 +151,18 @@ async def update_clothing(
     try:
         payload = ClothingCreate(**cleaned)
     except ValidationError as exc:
-        errors = {error["loc"][0]: error["msg"] for error in exc.errors()}
+        errors = {}
+        for error in exc.errors():
+            field = error["loc"][0] if error["loc"] else "unknown"
+            msg = error["msg"]
+            if "ensure this value has at least" in msg.lower():
+                errors[field] = f"This field is required and must be at least {error.get('ctx', {}).get('limit_value', '')} characters"
+            elif "ensure this value has at most" in msg.lower():
+                errors[field] = f"This field must be at most {error.get('ctx', {}).get('limit_value', '')} characters"
+            elif "value is not a valid" in msg.lower():
+                errors[field] = "Please select a valid option"
+            else:
+                errors[field] = msg
         return templates.TemplateResponse(
             "clothes/form.html",
             {
@@ -142,7 +170,7 @@ async def update_clothing(
                 "page_title": f"Edit {item.name}",
                 "action": f"/clothes/{item.id}/edit",
                 "category_options": _category_options(),
-                "form_values": cleaned,
+                "form_values": _prepare_form_values_for_display(cleaned),
                 "errors": errors,
             },
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
